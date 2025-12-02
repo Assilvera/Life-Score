@@ -1,11 +1,14 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { ActionRepository } from '../../domain/repositories/action.repository';
 import { Action } from '../../domain/entities/action.entity';
 import { CreateActionDto } from '../dto/create-action.dto';
 
 @Injectable()
 export class CreateActionUseCase {
-  constructor(private readonly actionRepository: ActionRepository) {}
+  constructor(
+    @Inject('ActionRepository')
+    private readonly actionRepository: ActionRepository,
+  ) {}
 
   async execute(input: CreateActionDto): Promise<Action> {
     const existing = await this.actionRepository.findByCode(input.code);

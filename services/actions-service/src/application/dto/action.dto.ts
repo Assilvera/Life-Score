@@ -1,16 +1,38 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Action } from '../../domain/entities/action.entity';
 
 export class ActionDto {
+  @ApiProperty()
   id!: string;
+
+  @ApiProperty()
   code!: string;
+
+  @ApiProperty()
   title!: string;
+
+  @ApiProperty()
   category!: string;
+
+  @ApiProperty()
   basePoints!: number;
+
+  @ApiProperty({ enum: ['easy', 'medium', 'hard'] })
   difficulty!: string;
+
+  @ApiProperty()
   description!: string;
-  coinsReward!: number;
+
+  @ApiProperty({ required: false })
+  coinsReward?: number;
+
+  @ApiProperty()
   isActive!: boolean;
+
+  @ApiProperty()
   createdAt!: Date;
+
+  @ApiProperty()
   updatedAt!: Date;
 
   static fromEntity(action: Action): ActionDto {

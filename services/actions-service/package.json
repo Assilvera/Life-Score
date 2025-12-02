@@ -1,0 +1,15 @@
+{
+  "name": "actions-service",
+  "version": "1.0.0",
+  "description": "Actions management service",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+

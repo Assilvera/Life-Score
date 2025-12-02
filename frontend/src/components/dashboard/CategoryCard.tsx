@@ -1,0 +1,2 @@
+// Category Card component
+

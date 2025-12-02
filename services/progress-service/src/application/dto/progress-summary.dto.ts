@@ -1,0 +1,2 @@
+// DTO for progress summary
+

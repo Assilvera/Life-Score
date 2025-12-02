@@ -1,0 +1,2 @@
+// DTO for user login
+

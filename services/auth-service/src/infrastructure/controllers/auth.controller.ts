@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.usecase';
 import { LoginUserUseCase } from '../../application/use-cases/login-user.usecase';
 import { ValidateTokenUseCase } from '../../application/use-cases/validate-token.usecase';
@@ -21,6 +21,29 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
+  @ApiBody({
+    type: RegisterUserDto,
+    examples: {
+      example1: {
+        summary: 'Registro completo',
+        value: {
+          email: 'juan.perez@example.com',
+          username: 'juanperez',
+          password: 'password123',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+        },
+      },
+      example2: {
+        summary: 'Registro mínimo',
+        value: {
+          email: 'maria@example.com',
+          username: 'maria',
+          password: 'securepass456',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 201, type: AuthResponseDto })
   @ApiResponse({ status: 400, description: 'Email o username ya registrado' })
   async register(@Body() dto: RegisterUserDto): Promise<AuthResponseDto> {
@@ -35,6 +58,25 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
+  @ApiBody({
+    type: LoginUserDto,
+    examples: {
+      example1: {
+        summary: 'Login con email',
+        value: {
+          emailOrUsername: 'juan.perez@example.com',
+          password: 'password123',
+        },
+      },
+      example2: {
+        summary: 'Login con username',
+        value: {
+          emailOrUsername: 'juanperez',
+          password: 'password123',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 200, type: AuthResponseDto })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   async login(@Body() dto: LoginUserDto): Promise<AuthResponseDto> {

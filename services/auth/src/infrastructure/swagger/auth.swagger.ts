@@ -23,55 +23,120 @@ export function setupSwagger(app: Application) {
         servers: [{ url: `${HOST}:${PORT}` }],
         components: {
           securitySchemes: {
-            bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+            bearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "JWT",
+            },
           },
           schemas: {
             RegisterRequest: {
               type: "object",
+              description:
+                "Payload para registrar un nuevo cliente en la plataforma.",
               required: ["name", "email", "password"],
               properties: {
-                name: { type: "string", example: "Ricardo Pérez" },
-                email: { type: "string", example: "ricardo@example.com" },
-                password: { type: "string", example: "123456" },
+                name: {
+                  type: "string",
+                  minLength: 3,
+                  description: "Nombre completo del usuario.",
+                  example: "Ricardo Pérez",
+                },
+                email: {
+                  type: "string",
+                  format: "email",
+                  description: "Correo electrónico único del usuario.",
+                  example: "ricardo@example.com",
+                },
+                password: {
+                  type: "string",
+                  minLength: 6,
+                  description:
+                    "Contraseña segura con mínimo 6 caracteres (idealmente con mayúsculas, minúsculas y números).",
+                  example: "123456",
+                },
               },
             },
-            // Login por email O por name (ejemplos por defecto → CLIENTE)
+
+            // Login por email O por name
             LoginRequest: {
+              description:
+                "Permite iniciar sesión usando **email + password** o **name + password**.",
               oneOf: [
                 {
                   type: "object",
                   required: ["email", "password"],
                   properties: {
-                    email: { type: "string", example: "client@example.com" }, // ← ejemplo cliente
-                    password: { type: "string", example: "123456" },
+                    email: {
+                      type: "string",
+                      format: "email",
+                      description: "Correo electrónico del usuario.",
+                      example: "client@example.com",
+                    },
+                    password: {
+                      type: "string",
+                      minLength: 6,
+                      description: "Contraseña del usuario.",
+                      example: "123456",
+                    },
                   },
                 },
                 {
                   type: "object",
                   required: ["name", "password"],
                   properties: {
-                    name: { type: "string", example: "clientuser" }, // ← ejemplo cliente
-                    password: { type: "string", example: "123456" },
+                    name: {
+                      type: "string",
+                      description: "Nombre de usuario (username).",
+                      example: "clientuser",
+                    },
+                    password: {
+                      type: "string",
+                      minLength: 6,
+                      description: "Contraseña del usuario.",
+                      example: "123456",
+                    },
                   },
                 },
               ],
             },
+
             AccessTokenResponse: {
               type: "object",
+              description:
+                "Respuesta estándar de login con información del rol y el token de acceso.",
               properties: {
-                role: { type: "string", enum: ["admin", "client"] },
-                accessToken: { type: "string", example: "eyJhbGciOi..." },
+                role: {
+                  type: "string",
+                  enum: ["admin", "client"],
+                  description: "Rol asociado al usuario autenticado.",
+                  example: "client",
+                },
+                accessToken: {
+                  type: "string",
+                  description:
+                    "JWT de acceso que debe enviarse en el header Authorization: Bearer <token>.",
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                },
               },
             },
+
             MessageResponse: {
               type: "object",
-              properties: { message: { type: "string" } },
+              description:
+                "Respuesta simple con un mensaje informativo (éxito, error, etc.).",
+              properties: {
+                message: {
+                  type: "string",
+                  example: "User registered successfully",
+                },
+              },
             },
           },
         },
-        tags: [
-          { name: "Auth", description: "Registro y login" },
-        ],
+
+        tags: [{ name: "Auth", description: "Registro y login" }],
+
         paths: {
           "/auth/register": {
             post: {
@@ -82,19 +147,27 @@ export function setupSwagger(app: Application) {
                 content: {
                   "application/json": {
                     schema: { $ref: "#/components/schemas/RegisterRequest" },
+                    // Body prellenado por defecto
+                    example: {
+                      name: "Ricardo Pérez",
+                      email: "ricardo@example.com",
+                      password: "123456",
+                    },
                   },
                 },
               },
               responses: {
                 "201": {
-                  description: "Usuario registrado",
+                  description: "Usuario registrado correctamente",
                   content: {
                     "application/json": {
-                      schema: { $ref: "#/components/schemas/MessageResponse" },
+                      schema: {
+                        $ref: "#/components/schemas/MessageResponse",
+                      },
                     },
                   },
                 },
-                "400": { description: "Solicitud inválida" },
+                "400": { description: "Solicitud inválida (datos incorrectos o email duplicado)" },
               },
             },
           },
@@ -102,22 +175,19 @@ export function setupSwagger(app: Application) {
           "/auth/login/admin": {
             post: {
               tags: ["Auth"],
-              summary: "Login del admin único (creado en bootstrap)",
+              summary:
+                "Login del admin único (creado automáticamente en el bootstrap)",
+              description:
+                "Autentica al **super admin** usando email o name. El usuario admin se crea automáticamente al arrancar el servicio.",
               requestBody: {
                 required: true,
                 content: {
                   "application/json": {
                     schema: { $ref: "#/components/schemas/LoginRequest" },
-                    // 👇 Ejemplos específicos para ADMIN
-                    examples: {
-                      byEmail: {
-                        summary: "Admin por email",
-                        value: { email: "super@admin.com", password: "P4ssw0rd!" },
-                      },
-                      byName: {
-                        summary: "Admin por name",
-                        value: { name: "superadmin", password: "P4ssw0rd!" },
-                      },
+                    // Body prellenado por defecto (admin)
+                    example: {
+                      email: "super@admin.com",
+                      password: "P4ssw0rd!",
                     },
                   },
                 },
@@ -127,7 +197,19 @@ export function setupSwagger(app: Application) {
                   description: "Token de acceso para admin",
                   content: {
                     "application/json": {
-                      schema: { $ref: "#/components/schemas/AccessTokenResponse" },
+                      schema: {
+                        $ref: "#/components/schemas/AccessTokenResponse",
+                      },
+                      examples: {
+                        adminExample: {
+                          summary: "Respuesta típica para admin",
+                          value: {
+                            role: "admin",
+                            accessToken:
+                              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.admin...",
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -140,21 +222,17 @@ export function setupSwagger(app: Application) {
             post: {
               tags: ["Auth"],
               summary: "Login de cliente (usuarios registrados)",
+              description:
+                "Autentica a un usuario con rol **client** previamente registrado mediante `/auth/register`.",
               requestBody: {
                 required: true,
                 content: {
                   "application/json": {
                     schema: { $ref: "#/components/schemas/LoginRequest" },
-                    // 👇 Ejemplos específicos para CLIENTE
-                    examples: {
-                      byEmail: {
-                        summary: "Cliente por email",
-                        value: { email: "client@example.com", password: "123456" },
-                      },
-                      byName: {
-                        summary: "Cliente por name",
-                        value: { name: "clientuser", password: "123456" },
-                      },
+                    // Body prellenado por defecto (cliente)
+                    example: {
+                      email: "client@example.com",
+                      password: "123456",
                     },
                   },
                 },
@@ -164,7 +242,19 @@ export function setupSwagger(app: Application) {
                   description: "Token de acceso para cliente",
                   content: {
                     "application/json": {
-                      schema: { $ref: "#/components/schemas/AccessTokenResponse" },
+                      schema: {
+                        $ref: "#/components/schemas/AccessTokenResponse",
+                      },
+                      examples: {
+                        clientExample: {
+                          summary: "Respuesta típica para cliente",
+                          value: {
+                            role: "client",
+                            accessToken:
+                              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.client...",
+                          },
+                        },
+                      },
                     },
                   },
                 },

@@ -5,6 +5,7 @@ export interface ActionRepository {
   findAll(): Promise<Action[]>;
   findById(id: string): Promise<Action | null>;
   findByCode(code: string): Promise<Action | null>;
+  findByName(name: string): Promise<Action | null>;
   update(action: Action): Promise<Action>;
   delete(id: string): Promise<void>;
 }

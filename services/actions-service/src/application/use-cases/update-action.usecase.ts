@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { ActionRepository } from '../../domain/repositories/action.repository';
 import { Action } from '../../domain/entities/action.entity';
 
 @Injectable()
 export class UpdateActionUseCase {
-  constructor(private readonly actionRepository: ActionRepository) {}
+  constructor(
+    @Inject('ActionRepository')
+    private readonly actionRepository: ActionRepository,
+  ) {}
 
   async execute(id: string, updates: Partial<Action>): Promise<Action> {
     const existing = await this.actionRepository.findById(id);
@@ -12,7 +20,7 @@ export class UpdateActionUseCase {
       throw new NotFoundException('Action not found');
     }
 
-    // Si se está actualizando el código, verificar que no exista otro con el mismo código
+    // Validar código único si lo cambian
     if (updates.code && updates.code !== existing.code) {
       const codeExists = await this.actionRepository.findByCode(updates.code);
       if (codeExists) {
@@ -20,7 +28,6 @@ export class UpdateActionUseCase {
       }
     }
 
-    // Crear una nueva instancia con los valores actualizados
     const updated = new Action(
       existing.id,
       updates.code ?? existing.code,
@@ -32,7 +39,7 @@ export class UpdateActionUseCase {
       updates.coinsReward ?? existing.coinsReward,
       updates.isActive ?? existing.isActive,
       existing.createdAt,
-      new Date(), // updatedAt siempre se actualiza
+      new Date(),
     );
 
     return this.actionRepository.update(updated);

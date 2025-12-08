@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   # PostgreSQL Database
   postgres:
@@ -37,7 +39,11 @@ services:
     networks:
       - lifescore-network
     restart: unless-stopped
-    command: sh -c "sleep 5 && npx prisma migrate dev --name init --create-only || true && npx prisma migrate deploy && npm run start"
+    command: >
+      sh -c "sleep 5 &&
+      npx prisma migrate dev --name init --create-only || true &&
+      npx prisma migrate deploy &&
+      npm run start"
 
   # Auth Service
   auth-service:
@@ -59,7 +65,35 @@ services:
     networks:
       - lifescore-network
     restart: unless-stopped
-    command: sh -c "sleep 5 && npx prisma migrate dev --name init --create-only || true && npx prisma migrate deploy && npm run start"
+    command: >
+      sh -c "sleep 5 &&
+      npx prisma migrate dev --name init --create-only || true &&
+      npx prisma migrate deploy &&
+      npm run start"
+
+  # Notifications Service
+  notifications-service:
+    build:
+      context: ./services/notifications-service
+      dockerfile: Dockerfile
+    container_name: lifescore-notifications-service
+    environment:
+      DATABASE_URL: postgresql://lifescore:lifescore123@postgres:5432/lifescore?schema=public
+      PORT: 3004
+      NODE_ENV: development
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lifescore-network
+    restart: unless-stopped
+    command: >
+      sh -c "sleep 5 &&
+      npx prisma migrate dev --name init --create-only || true &&
+      npx prisma migrate deploy &&
+      npm run start"
 
 volumes:
   postgres_data:
@@ -67,4 +101,3 @@ volumes:
 networks:
   lifescore-network:
     driver: bridge
-

@@ -1,2 +1,20 @@
-// Prisma schema for notifications service
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  userId       String
+  title        String
+  message      String
+  challengeId  String?   // opcional: para enlazar con un reto concreto
+  type         String    // "REMINDER", "STREAK", "XP", etc.
+  isRead       Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  readAt       DateTime?
+}

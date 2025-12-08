@@ -57,6 +57,22 @@ export class ActionPrismaRepository implements ActionRepository {
     return row ? this.mapToEntity(row) : null;
   }
 
+  // 🔥 NUEVO: requerido por ActionRepository
+  // Busca por "nombre de la acción" = title
+  async findByName(name: string): Promise<Action | null> {
+    const row = await this.prisma.action.findFirst({
+      where: {
+        title: {
+          equals: name,
+          mode: 'insensitive', // no importa mayúsculas/minúsculas
+        },
+        isActive: true,
+      },
+    });
+
+    return row ? this.mapToEntity(row) : null;
+  }
+
   async update(action: Action): Promise<Action> {
     const updated = await this.prisma.action.update({
       where: { id: action.id },
